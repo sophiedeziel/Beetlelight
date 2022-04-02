@@ -19,17 +19,12 @@
 #define LED_TOUR_2 A3
 
 #define LED_INSIDE A4
-#define BUTTON A5
+#define MAX_INSIDE_INTENSITY 255
 #define total_tour_frames 10
 
 int current_tour_frame = 0;
 int current_arrow_frame = 0;
 int current_arrow = -1;
-const int debounce_time = 100;
-long last_debounce;
-bool enabled = false;
-bool button_state = false;
-bool last_button_state = false;
 
 bool tour_frames[total_tour_frames][2] = {
     {true, false},
@@ -82,11 +77,12 @@ void nextArrowFrame()
   current_arrow_frame++;
   if (current_arrow_frame <= buffer_frames)
   {
-    // Début de l'animation avec rien
+    analogWrite(0, 0);
   }
   else if (current_arrow_frame % frames_per_ligth == 0)
   {
     current_arrow++;
+    analogWrite(0, MAX_INSIDE_INTENSITY);
     digitalWrite(arrow_lights[current_arrow], LOW);
     for (int i = 0; i <= total_arrow_lights; i++)
     {
@@ -123,9 +119,7 @@ void setup()
 
   pinMode(LED_TOUR_2, OUTPUT);
   pinMode(LED_TOUR_1, OUTPUT);
-
   pinMode(LED_INSIDE, OUTPUT);
-  pinMode(BUTTON, INPUT);
 
   digitalWrite(LED_ARROW_1, HIGH);
   digitalWrite(LED_ARROW_2, HIGH);
@@ -144,34 +138,11 @@ void setup()
 
   digitalWrite(LED_TOUR_2, HIGH);
   digitalWrite(LED_TOUR_1, HIGH);
-
-  digitalWrite(LED_INSIDE, LOW);
 }
 
 void loop()
 {
-  if (millis() - last_debounce > debounce_time)
-  {
-    last_debounce = millis();
-    bool reading = digitalRead(BUTTON);
-
-    if (reading != button_state)
-    {
-      button_state = reading;
-
-      if (reading == true)
-      {
-        enabled = !enabled;
-      }
-    }
-  }
-
-  last_button_state = button_state;
-
-  if (enabled)
-  {
-    nextTourFrame();
-    nextArrowFrame();
-  }
+  nextTourFrame();
+  nextArrowFrame();
   delay(20);
 }
